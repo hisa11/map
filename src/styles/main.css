@@ -1,0 +1,399 @@
+:root {
+  --c-surface: #ffffff;
+  --c-text: #1d2329;
+  --c-muted: #5f6b76;
+  --c-border: #d5dbe1;
+  --c-hover: #f1f4f7;
+  --c-accent: #1f6feb;
+  --c-accent-weak: #e7f0ff;
+  --c-error: #b3261e;
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.2), 0 4px 14px rgb(0 0 0 / 0.08);
+  --radius: 10px;
+  --gap: 10px;
+  --ctrl-size: 40px;
+  --search-height: 46px;
+
+  /* Android のステータスバー・ナビゲーションバーの逃げ。Web では 0 */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  color-scheme: light;
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  color: var(--c-text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #eef1f3;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+  /* 長押しで文字選択やコピーメニューが出ないようにする */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---- 画面上部のバー ---- */
+
+.ui-top {
+  position: absolute;
+  top: calc(var(--safe-top) + var(--gap));
+  left: calc(var(--safe-left) + var(--gap));
+  right: calc(var(--safe-right) + var(--gap));
+  z-index: 3;
+  pointer-events: none;
+}
+
+.ui-top > * {
+  pointer-events: auto;
+}
+
+.ui-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.ui-overlay > * {
+  pointer-events: auto;
+}
+
+/* ---- MapLibre のコントロール ---- */
+
+/* スマホでは検索バーが全幅なので、右上のボタン列はその下に置く */
+.maplibregl-ctrl-top-right {
+  top: calc(var(--safe-top) + var(--search-height) + var(--gap));
+  right: var(--safe-right);
+}
+
+.maplibregl-ctrl-bottom-left {
+  bottom: var(--safe-bottom);
+  left: var(--safe-left);
+}
+
+.maplibregl-ctrl-bottom-right {
+  bottom: var(--safe-bottom);
+  right: var(--safe-right);
+}
+
+.maplibregl-ctrl-group {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.maplibregl-ctrl-group button {
+  width: var(--ctrl-size);
+  height: var(--ctrl-size);
+}
+
+.app-ctrl-button {
+  display: grid;
+  place-items: center;
+  color: #333;
+}
+
+.app-ctrl-button[aria-expanded='true'] {
+  color: var(--c-accent);
+}
+
+.app-ctrl-button[aria-busy='true'] svg {
+  animation: spin 1s linear infinite;
+  color: var(--c-accent);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- 検索 ---- */
+
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  height: var(--search-height);
+  padding: 0 4px 0 14px;
+  background: var(--c-surface);
+  border-radius: calc(var(--search-height) / 2);
+  box-shadow: var(--shadow);
+}
+
+.search[aria-busy='true'] {
+  background-image: linear-gradient(90deg, transparent, var(--c-accent-weak), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 16px; /* 16px 未満だと iOS / 一部 Android でフォーカス時に拡大される */
+  color: var(--c-text);
+}
+
+.search__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search__icon-button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-muted);
+  cursor: pointer;
+}
+
+.search__icon-button:hover {
+  background: var(--c-hover);
+}
+
+.search__results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: min(60vh, 420px);
+  margin: 0;
+  padding: 6px 0;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--c-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.search__result {
+  display: block;
+  width: 100%;
+  padding: 11px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.search__result:hover,
+.search__result:focus-visible {
+  background: var(--c-hover);
+  outline: 0;
+}
+
+/* ---- パネル ---- */
+
+.panel {
+  position: absolute;
+  top: calc(var(--safe-top) + var(--search-height) + var(--gap) * 2);
+  right: calc(var(--safe-right) + var(--gap) * 2 + var(--ctrl-size));
+  width: min(240px, calc(100vw - 80px));
+  padding: 8px 0;
+  background: var(--c-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.panel__title {
+  padding: 6px 16px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-muted);
+}
+
+.option-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.option:hover {
+  background: var(--c-hover);
+}
+
+.option input {
+  margin: 0;
+  accent-color: var(--c-accent);
+}
+
+/* ---- 地図上の印 ---- */
+
+.locate-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 3px solid #fff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.15),
+    0 0 0 10px rgb(31 111 235 / 0.18);
+}
+
+.coord-popup .maplibregl-popup-content {
+  padding: 8px 10px 8px 14px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.coord-popup__body {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coord-popup__text {
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  user-select: all;
+  -webkit-user-select: all;
+}
+
+.coord-popup__copy {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--c-muted);
+  cursor: pointer;
+}
+
+.coord-popup__copy:hover {
+  background: var(--c-hover);
+}
+
+.coord-popup__copy svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---- トースト ---- */
+
+.toast-stack {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--safe-bottom) + 48px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgb(32 36 40 / 0.92);
+  color: #fff;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+
+.toast--error {
+  background: rgb(179 38 30 / 0.95);
+}
+
+.toast--leaving {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.fatal {
+  position: absolute;
+  inset: auto 16px 50% 16px;
+  z-index: 10;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+/* ---- 広い画面（PC・タブレット） ---- */
+
+@media (min-width: 720px) {
+  .ui-top {
+    right: auto;
+    width: 400px;
+  }
+
+  .maplibregl-ctrl-top-right {
+    top: var(--safe-top);
+  }
+
+  .panel {
+    top: calc(var(--safe-top) + var(--gap));
+  }
+}
