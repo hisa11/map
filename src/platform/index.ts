@@ -27,6 +27,7 @@ const isNative = Capacitor.isNativePlatform();
 
 /** Web の GeolocationPositionError / Android プラグインのエラーを LocationError に寄せる */
 function toLocationError(err: unknown): LocationError {
+  if (err instanceof LocationError) return err;
   const code = typeof err === 'object' && err !== null ? (err as { code?: unknown }).code : undefined;
   const message = err instanceof Error ? err.message : String((err as { message?: unknown })?.message ?? err);
   if (code === 1 || /denied|permission/i.test(message)) {
@@ -60,8 +61,9 @@ export const platform = {
     if (!isNative && !window.isSecureContext) {
       throw new LocationError('位置情報は HTTPS か localhost で開いたときだけ使えます', 'insecure');
     }
-    await ensureLocationPermission();
     try {
+      // Android では位置情報サービスがオフだと権限確認の時点で例外になるので、ここも変換の対象に含める
+      await ensureLocationPermission();
       const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
       return { lng: pos.coords.longitude, lat: pos.coords.latitude, accuracy: pos.coords.accuracy };
     } catch (err) {
